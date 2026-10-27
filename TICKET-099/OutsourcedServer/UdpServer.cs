@@ -128,7 +128,8 @@ namespace BattleArena
             // 오래된 패킷은 버립니다.
             // UDP는 순서를 보장하지 않아서 5번보다 6번이 먼저 올 수 있습니다.
             // 그때 5번을 적용하면 캐릭터가 뒤로 갑니다.
-            if (seq < session.LastSeq)
+            // 같은 번호(중복 패킷)도 이미 적용한 것이므로 버립니다.
+            if (seq <= session.LastSeq)
             {
                 Interlocked.Increment(ref _droppedCount);
                 return;
