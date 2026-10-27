@@ -67,14 +67,18 @@ namespace BattleArena
         /// TCP는 보낸 단위 그대로 도착한다는 보장이 없어서,
         /// Receive 한 번에 일부만 올 수 있습니다.
         /// 상대가 연결을 닫으면 false를 돌려줍니다.
+        ///
+        /// socket.ReceiveAsync 는 데이터를 기다리는 동안 스레드를 쓰지 않습니다.
+        /// (Task.Run 안에서 동기 Receive 를 부르면 접속자마다 스레드가 하나씩 묶입니다)
         /// </summary>
         private static async Task<bool> ReceiveExactAsync(Socket socket, byte[] buffer, int size)
         {
             int received = 0;
             while (received < size)
             {
-                int offset = received;
-                int n = await Task.Run(() => socket.Receive(buffer, offset, size - offset, SocketFlags.None));
+                int n = await socket.ReceiveAsync(
+                    new ArraySegment<byte>(buffer, received, size - received),
+                    SocketFlags.None);
 
                 if (n == 0) return false;
                 received += n;
